@@ -3,413 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de Bord | 营销数据看板</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <title>L'Observatoire | 达人情报中心</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
-            --bg-body: #F5F6FA; /* 稍微偏冷的商务灰背景 */
-            --bg-card: #FFFFFF;
-            --sidebar-bg: #1E2329; /* 深色侧边栏，更像SaaS系统 */
-            --text-primary: #2C3E50;
-            --text-secondary: #7F8C8D;
-            --accent-gold: #C6A87C; /* 法式金点缀 */
-            --success: #27AE60;
-            --danger: #C0392B;
-            --border: #E0E0E0;
+            /* 🇫🇷 法式高级配色 - 商务情报版 */
+            --bg-body: #F4F5F7;        /* 浅灰冷调背景 */
+            --bg-card: #FFFFFF;        /* 纯白卡片 */
+            --sidebar-bg: #1A202C;     /* 深海军蓝黑 */
+            --text-main: #2D3748;      /* 炭灰主字 */
+            --text-light: #718096;     /* 浅灰辅字 */
+            --accent-gold: #D4AF37;    /* 古典金 (用于强调) */
+            --brand-blue: #3182CE;     /* 科技蓝 (用于操作按钮) */
+            --status-green: #38A169;   /* 监控正常/增长 */
+            --status-alert: #E53E3E;   /* 新贴提醒 */
+            --border: #E2E8F0;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        
         body {
-            font-family: 'Inter', sans-serif; /* 数据优先使用清晰的无衬线体 */
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-body);
-            color: var(--text-primary);
-            display: flex;
+            color: var(--text-main);
             height: 100vh;
+            display: flex;
             overflow: hidden;
         }
 
-        /* --- 左侧导航栏 (紧凑型) --- */
+        /* --- 侧边栏 --- */
         .sidebar {
-            width: 240px;
+            width: 260px;
             background-color: var(--sidebar-bg);
-            color: #fff;
+            color: white;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 30px 20px;
+            transition: all 0.3s;
         }
 
-        .brand {
-            font-family: 'Playfair Display', serif; /* 仅保留品牌名为法式衬线 */
-            font-size: 20px;
-            margin-bottom: 40px;
-            color: var(--accent-gold);
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            margin-bottom: 50px;
             letter-spacing: 1px;
+            color: #fff;
+            padding-left: 10px;
         }
+        .logo span { color: var(--accent-gold); font-style: italic; }
 
-        .menu-item {
+        .nav-item {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
-            margin-bottom: 5px;
-            border-radius: 6px;
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            border-radius: 8px;
             cursor: pointer;
-            color: #A0AAB5;
+            color: #A0AEC0;
             font-size: 14px;
+            font-weight: 500;
             transition: all 0.2s;
         }
 
-        .menu-item:hover, .menu-item.active {
-            background-color: rgba(255,255,255,0.1);
-            color: #fff;
-        }
+        .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background-color: var(--accent-gold); color: #1A202C; font-weight: 600; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); }
+        .nav-item i { width: 24px; margin-right: 12px; font-size: 16px; }
 
-        .menu-item i { margin-right: 12px; width: 20px; text-align: center; }
+        /* --- 主内容区 --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- 主显示区 --- */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .header-row {
+        .top-bar {
+            height: 70px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            padding: 0 40px;
         }
 
-        h2 { font-weight: 600; font-size: 24px; color: #1a1a1a; }
+        .page-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--text-main); }
+        .user-info { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; }
+        .avatar { width: 32px; height: 32px; background: #CBD5E0; border-radius: 50%; }
+
+        .content-scroll { flex: 1; overflow-y: auto; padding: 40px; }
+
+        /* --- 通用组件样式 --- */
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: var(--text-main); color: white; }
+        .btn-primary:hover { background: #000; }
+        .btn-accent { background: var(--accent-gold); color: #1A202C; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-light); }
         
-        /* --- 顶部 KPI 数据卡片 --- */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .kpi-card {
-            background: var(--bg-card);
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
             border: 1px solid var(--border);
-            position: relative;
+            align-items: flex-end;
         }
 
-        .kpi-title { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi-value { font-size: 28px; font-weight: 700; margin-top: 10px; font-family: 'Playfair Display', serif; }
-        .kpi-change { font-size: 12px; margin-top: 5px; display: flex; align-items: center; }
-        .text-up { color: var(--success); }
-        .text-down { color: var(--danger); }
-
-        /* --- 图表区域 --- */
-        .chart-section {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .panel {
-            background: var(--bg-card);
-            padding: 25px;
-            border-radius: 8px;
+        .form-field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .form-label { font-size: 12px; color: var(--text-light); font-weight: 600; text-transform: uppercase; }
+        .form-input {
+            padding: 10px 12px;
             border: 1px solid var(--border);
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        /* --- 核心数据表格 (重点) --- */
-        .table-container {
-            background: var(--bg-card);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-        
-        thead { background-color: #F8F9FA; border-bottom: 2px solid var(--border); }
-        
-        th {
-            text-align: left;
-            padding: 15px 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-        }
-
-        td {
-            padding: 15px 20px;
-            font-size: 14px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
-        }
-
-        .influencer-cell { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-        
-        /* 平台标签 */
-        .badge { 
-            padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; 
-        }
-        .badge-ig { background: rgba(225, 48, 108, 0.1); color: #E1306C; }
-        .badge-yt { background: rgba(255, 0, 0, 0.1); color: #FF0000; }
-
-        /* 状态条 */
-        .progress-bar { width: 80px; height: 6px; background: #eee; border-radius: 3px; display: inline-block; margin-right: 8px; }
-        .progress-fill { height: 100%; border-radius: 3px; background: var(--sidebar-bg); }
-
-        .btn-action {
-            padding: 6px 12px;
-            border: 1px solid var(--border);
-            background: white;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
+            background: #FAFAFA;
         }
-        .btn-action:hover { background: #f5f5f5; }
+        .form-input:focus { border-color: var(--text-main); background: #fff; }
 
+        /* --- 表格样式 --- */
+        .data-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .data-table th { text-align: left; padding: 16px 24px; font-size: 12px; color: var(--text-light); text-transform: uppercase; background: #FAFAFA; border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover { background-color: #F7FAFC; }
+
+        .status-badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+        .status-badge.new { background: #FED7D7; color: #C53030; } /* 红底红字 */
+        .status-badge.normal { background: #F0FFF4; color: #2F855A; } /* 绿底绿字 */
+        .status-badge.dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 6px; }
+
+        /* --- 看板 KPI --- */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 30px; }
+        .kpi-card { background: #fff; padding: 24px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .kpi-label { font-size: 12px; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; }
+        .kpi-num { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; color: var(--text-main); }
+        
+        /* 平台小图标 */
+        .platform-tag { font-size: 16px; margin-right: 8px; }
+        .c-ig { color: #E1306C; }
+        .c-yt { color: #FF0000; }
+
+        /* 动画 */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="brand">L'ANALYTIQUE</div>
-        <div class="menu-item active"><i class="fas fa-chart-pie"></i> 总览 Dashboard</div>
-        <div class="menu-item"><i class="fas fa-users"></i> 达人库 Influencers</div>
-        <div class="menu-item"><i class="fab fa-instagram"></i> Instagram 追踪</div>
-        <div class="menu-item"><i class="fab fa-youtube"></i> YouTube 追踪</div>
-        <div class="menu-item"><i class="fas fa-file-export"></i> 报表导出</div>
-    </div>
-
-    <div class="main-content">
-        <div class="header-row">
-            <h2>Campaign Overview</h2>
-            <button style="background:var(--sidebar-bg); color:white; border:none; padding:10px 20px; border-radius:4px; cursor:pointer;">
-                <i class="fas fa-sync-alt"></i> 同步数据
-            </button>
+<div id="app">
+    <nav class="sidebar">
+        <div class="logo">L'Observatoire<span>.</span></div>
+        
+        <div class="nav-item" :class="{ active: currentView === 'search' }" @click="currentView = 'search'">
+            <i class="fas fa-search"></i> 达人搜寻 Discovery
         </div>
-
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-title">总覆盖人数 (Reach)</div>
-                <div class="kpi-value">2,450,300</div>
-                <div class="kpi-change text-up"><i class="fas fa-arrow-up"></i> 12.5% vs 上周</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-title">平均互动率 (ER)</div>
-                <div class="kpi-value">5.82%</div>
-                <div class="kpi-change text-up"><i class="fas fa-arrow-up"></i> 0.8% vs 上周</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-title">本周新增贴文</div>
-                <div class="kpi-value">84</div>
-                <div class="kpi-change text-down"><i class="fas fa-arrow-down"></i> 3 Posts</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-title">预估媒体价值 (EMV)</div>
-                <div class="kpi-value">€45.2k</div>
-                <div class="kpi-change text-up"><i class="fas fa-arrow-up"></i> €2.1k</div>
-            </div>
+        <div class="nav-item" :class="{ active: currentView === 'monitor' }" @click="currentView = 'monitor'">
+            <i class="fas fa-eye"></i> 达人监控 Monitoring
         </div>
+        <div class="nav-item" :class="{ active: currentView === 'dashboard' }" @click="currentView = 'dashboard'">
+            <i class="fas fa-chart-pie"></i> 数据看板 Dashboard
+        </div>
+    </nav>
 
-        <div class="chart-section">
-            <div class="panel">
-                <div class="panel-header">
-                    <span>互动趋势 (Engagement Trend)</span>
-                    <select style="border:none; color:var(--text-secondary);">
-                        <option>Last 30 Days</option>
-                    </select>
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="page-title">{{ pageTitle }}</div>
+            <div class="user-info">
+                <span>Content Team</span>
+                <div class="avatar"></div>
+            </div>
+        </header>
+
+        <div class="content-scroll">
+
+            <div v-if="currentView === 'search'">
+                <div class="input-group">
+                    <div class="form-field" style="flex: 2;">
+                        <label class="form-label">Seed Account (输入种子账号)</label>
+                        <input type="text" class="form-input" v-model="searchQuery" placeholder="@username (Instagram)">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Min. Followers</label>
+                        <select class="form-input">
+                            <option>10k+</option>
+                            <option>50k+</option>
+                            <option>100k+</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @click="simulateApiSearch" :disabled="isSearching">
+                        <i class="fas" :class="isSearching ? 'fa-spinner fa-spin' : 'fa-robot'"></i> 
+                        {{ isSearching ? 'Crawling...' : 'Start Crawl' }}
+                    </button>
                 </div>
-                <canvas id="trendChart" height="100"></canvas>
+
+                <div v-if="searchResults.length > 0">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                        <span style="font-size:14px; color:var(--text-light);">找到 {{ searchResults.length }} 个相关达人</span>
+                        <button class="btn btn-accent" @click="importSelected">
+                            <i class="fas fa-file-import"></i> 导入选中项到总库
+                        </button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox"></th>
+                                <th>Profile</th>
+                                <th>Category</th>
+                                <th>Followers</th>
+                                <th>Engagement</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in searchResults" :key="item.id">
+                                <td><input type="checkbox" v-model="item.selected"></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <img :src="item.avatar" style="width:36px; height:36px; border-radius:50%;">
+                                        <div>
+                                            <div style="font-weight:600;">{{ item.name }}</div>
+                                            <div style="font-size:12px; color:var(--text-light);">{{ item.handle }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span style="background:#EDF2F7; padding:2px 6px; border-radius:4px; font-size:12px;">{{ item.category }}</span></td>
+                                <td>{{ item.followers }}</td>
+                                <td>{{ item.er }}</td>
+                                <td><button class="btn btn-ghost" style="padding:4px 8px; font-size:12px;"><i class="fas fa-plus"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else-if="!isSearching" style="text-align:center; padding:60px; color:var(--text-light);">
+                    <i class="fas fa-search" style="font-size:48px; margin-bottom:20px; opacity:0.3;"></i>
+                    <p>请输入 Instagram 账号以抓取其相似关注者列表</p>
+                </div>
             </div>
-            <div class="panel">
-                <div class="panel-header">平台分布 (Platform Mix)</div>
-                <canvas id="pieChart" height="180"></canvas>
+
+            <div v-if="currentView === 'monitor'">
+                <div class="input-group">
+                    <div class="form-field" style="flex: 3;">
+                        <label class="form-label">Add Influencer to Monitor (添加监控链接)</label>
+                        <input type="text" class="form-input" placeholder="https://instagram.com/..." v-model="monitorInput">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Platform</label>
+                        <select class="form-input">
+                            <option>Instagram</option>
+                            <option>YouTube</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @click="addMonitorTask">
+                        <i class="fas fa-plus-circle"></i> Add Monitor
+                    </button>
+                </div>
+
+                <div style="background:#fff; border-radius:8px; border:1px solid var(--border);">
+                    <div style="padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                        <h3 style="font-family:'Playfair Display'; font-size:18px;">Live Monitoring Feed</h3>
+                        <button class="btn btn-ghost" @click="refreshMonitor">
+                            <i class="fas fa-sync-alt" :class="{'fa-spin': isRefreshing}"></i> Refresh API
+                        </button>
+                    </div>
+                    <table class="data-table" style="box-shadow:none; border-radius:0;">
+                        <thead>
+                            <tr>
+                                <th>Influencer</th>
+                                <th>Status</th>
+                                <th>Last Post Time</th>
+                                <th>Latest Content</th>
+                                <th>API Check</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="m in monitorList" :key="m.id" :style="m.hasNewPost ? 'background:#FFF5F5;' : ''">
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <i class="fab" :class="m.platform === 'IG' ? 'fa-instagram c-ig' : 'fa-youtube c-yt' " style="font-size:18px;"></i>
+                                        <strong>{{ m.name }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge dot" :class="m.hasNewPost ? 'new' : 'normal'">
+                                        {{ m.hasNewPost ? 'New Post Detected' : 'No Updates' }}
+                                    </span>
+                                </td>
+                                <td style="font-family: monospace;">{{ m.lastPostTime }}</td>
+                                <td>
+                                    <div v-if="m.hasNewPost" style="font-size:12px; color:var(--text-main);">
+                                        <i class="fas fa-image"></i> {{ m.postCaption }}
+                                    </div>
+                                    <div v-else style="color:var(--text-light); font-size:12px;">Waiting...</div>
+                                </td>
+                                <td style="font-size:12px; color:var(--text-light);">
+                                    Checked: {{ m.lastCheck }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <div v-if="currentView === 'dashboard'">
+                <div class="kpi-row">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Influencers</div>
+                        <div class="kpi-num">1,248</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Monitored Active</div>
+                        <div class="kpi-num">86</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Posts Today</div>
+                        <div class="kpi-num" style="color:var(--status-alert);">12</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Avg. Engagement</div>
+                        <div class="kpi-num">3.4%</div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:30px;">
+                    <div style="background:#fff; padding:24px; border-radius:8px; border:1px solid var(--border);">
+                        <h4 style="margin-bottom:20px; font-weight:600;">Database Growth & Activity</h4>
+                        <canvas id="growthChart" height="200"></canvas>
+                    </div>
+                    <div style="background:#fff; padding:24px; border-radius:8px; border:1px solid var(--border);">
+                        <h4 style="margin-bottom:20px; font-weight:600;">Platform Mix</h4>
+                        <canvas id="platformChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div style="background:#fff; padding:24px; border-radius:8px; border:1px solid var(--border);">
+                    <h4 style="margin-bottom:20px; font-weight:600;">Geographic Distribution</h4>
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        <div v-for="geo in geoData" :key="geo.country" style="display:flex; align-items:center; font-size:13px;">
+                            <span style="width:80px;">{{ geo.country }}</span>
+                            <div style="flex:1; height:8px; background:#EDF2F7; border-radius:4px; overflow:hidden;">
+                                <div :style="{width: geo.pct + '%', background: '#1A202C'}" style="height:100%;"></div>
+                            </div>
+                            <span style="width:40px; text-align:right;">{{ geo.pct }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
+    </main>
+</div>
 
-        <div class="panel" style="padding: 0; border: none; background: transparent;">
-            <div class="panel-header" style="margin-bottom: 10px;">达人实时表现追踪 (Live Tracking)</div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Influencer</th>
-                            <th>Platform</th>
-                            <th>Followers</th>
-                            <th>Engagement Rate</th>
-                            <th>Last Post</th>
-                            <th>Performance</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="influencer-cell">
-                                    <img src="https://randomuser.me/api/portraits/women/44.jpg" class="avatar">
-                                    <div>
-                                        <div style="font-weight:600;">Camille Charrière</div>
-                                        <div style="font-size:12px; color:#888;">Paris, FR</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge badge-ig">Instagram</span></td>
-                            <td>1.4M</td>
-                            <td>
-                                <span style="font-weight:bold;">4.2%</span>
-                                <span style="font-size:10px; color:var(--success);">(High)</span>
-                            </td>
-                            <td>
-                                <div style="font-size:12px;">2小时前</div>
-                                <div style="font-size:11px; color:#888;">Likes: 12.4k</div>
-                            </td>
-                            <td>
-                                <div style="display:flex; align-items:center;">
-                                    <div class="progress-bar"><div class="progress-fill" style="width: 85%;"></div></div>
-                                    <span style="font-size:11px;">85/100</span>
-                                </div>
-                            </td>
-                            <td><button class="btn-action">详情</button></td>
-                        </tr>
-                        
-                        <tr>
-                            <td>
-                                <div class="influencer-cell">
-                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" class="avatar">
-                                    <div>
-                                        <div style="font-weight:600;">Hugo Décrypte</div>
-                                        <div style="font-size:12px; color:#888;">News/Tech</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge badge-yt">YouTube</span></td>
-                            <td>2.1M</td>
-                            <td>
-                                <span style="font-weight:bold;">8.5%</span>
-                                <span style="font-size:10px; color:var(--success);">(Very High)</span>
-                            </td>
-                            <td>
-                                <div style="font-size:12px;">昨日</div>
-                                <div style="font-size:11px; color:#888;">Views: 450k</div>
-                            </td>
-                            <td>
-                                <div style="display:flex; align-items:center;">
-                                    <div class="progress-bar"><div class="progress-fill" style="width: 92%;"></div></div>
-                                    <span style="font-size:11px;">92/100</span>
-                                </div>
-                            </td>
-                            <td><button class="btn-action">详情</button></td>
-                        </tr>
+<script>
+    const { createApp } = Vue;
 
-                        <tr>
-                            <td>
-                                <div class="influencer-cell">
-                                    <img src="https://randomuser.me/api/portraits/women/65.jpg" class="avatar">
-                                    <div>
-                                        <div style="font-weight:600;">Louise Follain</div>
-                                        <div style="font-size:12px; color:#888;">Lifestyle</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="badge badge-ig">Instagram</span></td>
-                            <td>340k</td>
-                            <td>
-                                <span style="font-weight:bold;">2.1%</span>
-                                <span style="font-size:10px; color:var(--danger);">(Low)</span>
-                            </td>
-                            <td>
-                                <div style="font-size:12px;">3天前</div>
-                                <div style="font-size:11px; color:#888;">Likes: 2.1k</div>
-                            </td>
-                            <td>
-                                <div style="display:flex; align-items:center;">
-                                    <div class="progress-bar"><div class="progress-fill" style="width: 40%;"></div></div>
-                                    <span style="font-size:11px;">40/100</span>
-                                </div>
-                            </td>
-                            <td><button class="btn-action">详情</button></td>
-                        </tr>
+    createApp({
+        data() {
+            return {
+                currentView: 'dashboard', // 默认页面
+                isSearching: false,
+                searchQuery: '',
+                monitorInput: '',
+                isRefreshing: false,
+                
+                // 模拟数据：搜寻结果
+                searchResults: [],
+                
+                // 模拟数据：监控列表
+                monitorList: [
+                    { id: 1, name: 'Lena Situations', platform: 'IG', hasNewPost: true, lastPostTime: 'Today, 10:23 AM', postCaption: 'Vlog editing mode on...', lastCheck: '1 min ago' },
+                    { id: 2, name: 'Squeezie', platform: 'YT', hasNewPost: false, lastPostTime: '2 days ago', postCaption: '-', lastCheck: '1 min ago' },
+                    { id: 3, name: 'Jeanne Damas', platform: 'IG', hasNewPost: false, lastPostTime: 'Yesterday, 18:00', postCaption: '-', lastCheck: '1 min ago' }
+                ],
 
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+                // 模拟数据：地理分布
+                geoData: [
+                    { country: 'France', pct: 65 },
+                    { country: 'Belgium', pct: 15 },
+                    { country: 'Canada', pct: 10 },
+                    { country: 'Other', pct: 10 }
+                ]
+            }
+        },
+        computed: {
+            pageTitle() {
+                if(this.currentView === 'dashboard') return 'Overview Dashboard';
+                if(this.currentView === 'search') return 'Influencer Discovery';
+                if(this.currentView === 'monitor') return 'Live Monitoring';
+            }
+        },
+        methods: {
+            // 模拟 API 搜寻
+            simulateApiSearch() {
+                if(!this.searchQuery) return alert('请输入账号');
+                this.isSearching = true;
+                this.searchResults = []; // 清空
 
-    <script>
-        // 1. 趋势折线图
-        const ctxLine = document.getElementById('trendChart').getContext('2d');
-        const trendChart = new Chart(ctxLine, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Instagram Engagement',
-                    data: [12000, 19000, 15000, 25000, 22000, 30000, 28000],
-                    borderColor: '#1E2329', // 法式深灰
-                    backgroundColor: 'rgba(30, 35, 41, 0.05)',
-                    tension: 0.4,
-                    fill: true
-                }, {
-                    label: 'YouTube Views (x10)',
-                    data: [15000, 12000, 20000, 18000, 25000, 35000, 32000],
-                    borderColor: '#C6A87C', // 香槟金
-                    borderDash: [5, 5],
-                    tension: 0.4,
-                    fill: false
-                }]
+                // 模拟 1.5秒延迟
+                setTimeout(() => {
+                    this.searchResults = [
+                        { id: 101, name: 'Louise Follain', handle: '@louisefollain', avatar: 'https://randomuser.me/api/portraits/women/65.jpg', category: 'Fashion', followers: '342k', er: '2.4%', selected: false },
+                        { id: 102, name: 'Solange Smith', handle: '@solangesmith', avatar: 'https://randomuser.me/api/portraits/women/42.jpg', category: 'Art/Model', followers: '128k', er: '4.1%', selected: false },
+                        { id: 103, name: 'Alice Pietri', handle: '@alicepietri', avatar: 'https://randomuser.me/api/portraits/women/12.jpg', category: 'Lifestyle', followers: '89k', er: '3.8%', selected: false },
+                        { id: 104, name: 'Pierre Painça', handle: '@pierrepainca', avatar: 'https://randomuser.me/api/portraits/men/33.jpg', category: 'Photography', followers: '45k', er: '5.2%', selected: false },
+                    ];
+                    this.isSearching = false;
+                }, 1500);
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top', align: 'end' }
+
+            // 导入功能 (仅做演示)
+            importSelected() {
+                const count = this.searchResults.filter(i => i.selected).length;
+                if(count === 0) return alert('请先勾选达人');
+                alert(`成功将 ${count} 位达人导入总数据库！`);
+                // 实际逻辑：这里会调用后端 API POST /api/import
+            },
+
+            // 添加监控任务
+            addMonitorTask() {
+                if(!this.monitorInput) return;
+                // 模拟添加
+                this.monitorList.unshift({
+                    id: Date.now(),
+                    name: 'New Influencer',
+                    platform: 'IG',
+                    hasNewPost: false,
+                    lastPostTime: 'Checking...',
+                    postCaption: '-',
+                    lastCheck: 'Just now'
+                });
+                this.monitorInput = '';
+            },
+
+            // 刷新监控 (模拟发现新帖)
+            refreshMonitor() {
+                this.isRefreshing = true;
+                setTimeout(() => {
+                    // 随机让第二个人也有新帖
+                    this.monitorList[1].hasNewPost = true;
+                    this.monitorList[1].lastPostTime = 'Just now';
+                    this.monitorList[1].postCaption = 'New Video: Unboxing!';
+                    this.monitorList.forEach(i => i.lastCheck = 'Just now');
+                    this.isRefreshing = false;
+                }, 1000);
+            },
+
+            renderCharts() {
+                // 只有在 Dashboard 视图且 DOM 渲染完后才能画图
+                // 简单起见，这里假设页面加载时如果是在 Dashboard 就画，切换回来需要重新触发
+                // 在单文件 Vue 中，为了演示简单，我们只在 mounted 初始化一次，或者 watch currentView
+            }
+        },
+        watch: {
+            currentView(newVal) {
+                if(newVal === 'dashboard') {
+                    // 稍微延迟等待 DOM 出现
+                    setTimeout(() => {
+                        initCharts();
+                    }, 100);
+                }
+            }
+        },
+        mounted() {
+            // 初始化如果是 dashboard 就画图
+            if(this.currentView === 'dashboard') {
+                initCharts();
+            }
+        }
+    }).mount('#app');
+
+    // 图表初始化函数 (Chart.js)
+    function initCharts() {
+        const ctxGrowth = document.getElementById('growthChart');
+        if(ctxGrowth) {
+            new Chart(ctxGrowth, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Total Profiles',
+                        data: [500, 620, 800, 950, 1100, 1248],
+                        borderColor: '#1A202C',
+                        tension: 0.3
+                    }]
                 },
-                scales: {
-                    y: { grid: { borderDash: [2, 4], color: '#f0f0f0' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
 
-        // 2. 饼图
-        const ctxPie = document.getElementById('pieChart').getContext('2d');
-        const pieChart = new Chart(ctxPie, {
-            type: 'doughnut',
-            data: {
-                labels: ['Instagram', 'YouTube', 'TikTok'],
-                datasets: [{
-                    data: [55, 30, 15],
-                    backgroundColor: [
-                        '#1E2329', // 深色主导
-                        '#C6A87C', // 金色辅助
-                        '#E0E0E0'  // 灰色其余
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-    </script>
+        const ctxPlatform = document.getElementById('platformChart');
+        if(ctxPlatform) {
+            new Chart(ctxPlatform, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Instagram', 'YouTube', 'TikTok'],
+                    datasets: [{
+                        data: [65, 25, 10],
+                        backgroundColor: ['#E1306C', '#FF0000', '#000000']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    }
+</script>
+
 </body>
 </html>
